@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Tester ❤️</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ff6fa5, #ffb6c1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        width: 320px;
+    }
+
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        background: #ff4d88;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background: #ff1f68;
+    }
+
+    #result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>❤️ Love Tester ❤️</h2>
+
+    <input type="text" id="name1" placeholder="First Name">
+    <input type="text" id="name2" placeholder="Second Name">
+
+    <button onclick="calculateLove()">Test Love</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+function calculateLove() {
+    const name1 = document.getElementById("name1").value.trim();
+    const name2 = document.getElementById("name2").value.trim();
+
+    if (!name1 || !name2) {
+        document.getElementById("result").textContent =
+            "Please enter both names!";
+        return;
+    }
+
+    // Generate a consistent score for the same pair of names
+    const combined = (name1 + name2).toLowerCase();
+    let hash = 0;
+
+    for (let i = 0; i < combined.length; i++) {
+        hash += combined.charCodeAt(i) * (i + 1);
+    }
+
+    const score = hash % 101;
+
+    let message = "";
+
+    if (score >= 90)
+        message = "💖 Soulmates!";
+    else if (score >= 75)
+        message = "😍 Great Match!";
+    else if (score >= 50)
+        message = "😊 Worth a Try!";
+    else if (score >= 25)
+        message = "🤔 Could Work.";
+    else
+        message = "💔 Better as Friends.";
+
+document.getElementById("result").innerHTML =
+    `${score}%<br>${message}`;
+
+// Save activity for admin panel
+let activities = JSON.parse(localStorage.getItem("loveActivities")) || [];
+
+activities.push({
+    name1: name1,
+    name2: name2,
+    score: score,
+    message: message,
+    date: new Date().toLocaleString()
+});
+
+localStorage.setItem("loveActivities", JSON.stringify(activities));
+}
+</script>
+
+</body>
+</html>
