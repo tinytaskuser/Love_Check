@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Tester ❤️</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ff6fa5, #ffb6c1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .container {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        width: 320px;
+    }
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #ff4d88;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover {
+        background: #ff1f68;
+    }
+    #result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    #quoteBox {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px dashed #ffb6c1;
+        font-size: 13px;
+        color: #a15c74;
+        font-style: italic;
+        line-height: 1.4;
+    }
+    #quoteLabel {
+        font-style: normal;
+        font-weight: bold;
+        color: #ff4d88;
+        display: block;
+        margin-bottom: 4px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>❤️ Love Tester ❤️</h2>
+    <input type="text" id="name1" placeholder="First Name">
+    <input type="text" id="name2" placeholder="Second Name">
+    <button onclick="calculateLove()">Test Love</button>
+    <div id="result"></div>
+
+    <div id="quoteBox">
+        <span id="quoteLabel">💌 Quote of the Day</span>
+        <span id="quoteText"></span>
+    </div>
+</div>
+<script type="module">
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAn97HwzCchZzhsWVFy9KOwl6_EMlWaTEI",
+  authDomain: "love-tester-fe23b.firebaseapp.com",
+  projectId: "love-tester-fe23b",
+  storageBucket: "love-tester-fe23b.firebasestorage.app",
+  messagingSenderId: "99507568506",
+  appId: "1:99507568506:web:2e31b3490471323c32e0c3"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.calculateLove = async function() {
+    const name1 = document.getElementById("name1").value.trim();
+    const name2 = document.getElementById("name2").value.trim();
+    if (!name1 || !name2) {
+        document.getElementById("result").textContent =
+        "Please enter both names!";
+        return;
+    }
+    const combined = (name1 + name2).toLowerCase();
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+        hash += combined.charCodeAt(i) * (i + 1);
+    }
+    const score = hash % 101;
+    let message = "";
+    if (score >= 90)
+        message = "💖 Soulmates!";
+    else if (score >= 75)
+        message = "😍 Great Match!";
+    else if (score >= 50)
+        message = "😊 Worth a Try!";
+    else if (score >= 25)
+        message = "🤔 Could Work.";
+    else
+        message = "💔 Better as Friends.";
+    document.getElementById("result").innerHTML =
+    `${score}%<br>${message}`;
+    // Save to Firebase
+    await addDoc(collection(db, "loveActivities"), {
+        name1: name1,
+        name2: name2,
+        score: score,
+        message: message,
+        date: new Date()
+    });
+};
+
+// ---- Quote of the Day ----
+const loveQuotes = [
+    "The best thing to hold onto in life is each other.",
+    "Love is composed of a single soul inhabiting two bodies.",
+    "Where there is love there is life.",
+    "Love recognizes no barriers.",
+    "To love and be loved is to feel the sun from both sides.",
+    "Love is friendship that has caught fire.",
+    "A successful marriage requires falling in love many times, always with the same person.",
+    "You know you're in love when you can't fall asleep because reality is finally better than your dreams.",
+    "Love doesn't make the world go round. Love is what makes the ride worthwhile.",
+    "We are most alive when we're in love.",
+    "Love is not about how many days, months, or years you have been together. It's about how much you love each other every single day.",
+    "The best love is the kind that awakens the soul.",
+    "Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.",
+    "Love is when the other person's happiness is more important than your own.",
+    "There is always some madness in love, but there is also always some reason in madness."
+];
+
+function getQuoteOfTheDay() {
+    const today = new Date();
+    // Build a stable seed from year, month, day so it only changes once per day
+    const seed = today.getFullYear() * 372 + (today.getMonth() + 1) * 31 + today.getDate();
+    const index = seed % loveQuotes.length;
+    return loveQuotes[index];
+}
+
+document.getElementById("quoteText").textContent = `"${getQuoteOfTheDay()}"`;
+</script>
+</body>
+</html>
