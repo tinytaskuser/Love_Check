@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love & Friend Tester ❤️</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ff6fa5, #ffb6c1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        width: 350px;
+        max-width: 100%;
+    }
+
+    h2 {
+        margin-top: 0;
+        color: #ff4d88;
+    }
+
+    .mode-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .mode-button {
+        flex: 1;
+        padding: 11px 8px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: bold;
+        background: #eee;
+        color: #555;
+    }
+
+    .mode-button.active {
+        background: #ff4d88;
+        color: white;
+    }
+
+    .friend-mode.active {
+        background: #7b68ee;
+    }
+
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #ff4d88;
+    }
+
+    #testButton {
+        background: #ff4d88;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 5px;
+    }
+
+    #testButton:hover {
+        background: #ff1f68;
+    }
+
+    #result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        min-height: 50px;
+    }
+
+    #quoteBox {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px dashed #ffb6c1;
+        font-size: 13px;
+        color: #a15c74;
+        font-style: italic;
+        line-height: 1.4;
+    }
+
+    #quoteLabel {
+        font-style: normal;
+        font-weight: bold;
+        color: #ff4d88;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .subtitle {
+        color: #777;
+        font-size: 14px;
+        margin-top: -10px;
+        margin-bottom: 15px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2 id="title">❤️ Love Tester ❤️</h2>
+
+    <div class="mode-buttons">
+        <button
+            id="loveModeButton"
+            class="mode-button active"
+            onclick="setMode('love')">
+            ❤️ Love
+        </button>
+
+        <button
+            id="friendModeButton"
+            class="mode-button friend-mode"
+            onclick="setMode('friend')">
+            👫 Friends
+        </button>
+    </div>
+
+    <div class="subtitle" id="subtitle">
+        Find out your love compatibility!
+    </div>
+
+    <input
+        type="text"
+        id="name1"
+        placeholder="First Name"
+        maxlength="50">
+
+    <input
+        type="text"
+        id="name2"
+        placeholder="Second Name"
+        maxlength="50">
+
+    <br>
+
+    <button id="testButton" onclick="calculateTest()">
+        Test Love ❤️
+    </button>
+
+    <div id="result"></div>
+
+    <div id="quoteBox">
+        <span id="quoteLabel">💌 Quote of the Day</span>
+        <span id="quoteText"></span>
+    </div>
+
+</div>
+
+
+<script type="module">
+
+// ============================================================
+// FIREBASE
+// ============================================================
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAn97HwzCchZzhsWVFy9KOwl6_EMlWaTEI",
+    authDomain: "love-tester-fe23b.firebaseapp.com",
+    projectId: "love-tester-fe23b",
+    storageBucket: "love-tester-fe23b.firebasestorage.app",
+    messagingSenderId: "99507568506",
+    appId: "1:99507568506:web:2e31b3490471323c32e0c3"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+// ============================================================
+// CURRENT MODE
+// ============================================================
+
+let currentMode = "love";
+
+
+// ============================================================
+// LOVE QUOTES
+// ============================================================
+
+const loveQuotes = [
+    "The best thing to hold onto in life is each other.",
+    "Love is composed of a single soul inhabiting two bodies.",
+    "Where there is love there is life.",
+    "Love recognizes no barriers.",
+    "To love and be loved is to feel the sun from both sides.",
+    "Love is friendship that has caught fire.",
+    "A successful marriage requires falling in love many times, always with the same person.",
+    "You know you're in love when you can't fall asleep because reality is finally better than your dreams.",
+    "Love doesn't make the world go round. Love is what makes the ride worthwhile.",
+    "We are most alive when we're in love.",
+    "Love is not about how many days, months, or years you have been together. It's about how much you love each other every single day.",
+    "The best love is the kind that awakens the soul.",
+    "Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.",
+    "Love is when the other person's happiness is more important than your own.",
+    "There is always some madness in love, but there is also always some reason in madness."
+];
+
+
+// ============================================================
+// FRIEND QUOTES
+// ============================================================
+
+const friendQuotes = [
+    "A true friend is one soul in two bodies.",
+    "Friends are the family we choose for ourselves.",
+    "Good friends make the good times better and the hard times easier.",
+    "Life is better with good friends by your side.",
+    "Friendship isn't about who you've known the longest. It's about who never left your side.",
+    "A real friend walks in when the rest of the world walks out.",
+    "The greatest gift of life is friendship.",
+    "Friends make the good times better and the hard times unforgettable.",
+    "A good friend knows all your stories. A best friend helped you write them.",
+    "Friendship is the comfort of knowing you never have to face life alone.",
+    "True friendship can survive distance, time, and silence.",
+    "A friend is someone who makes you smile even when you're having a bad day.",
+    "Some people make your laugh a little louder and your life a little brighter.",
+    "Friends are the people who make ordinary moments unforgettable.",
+    "A strong friendship doesn't need daily conversations. It needs a loyal heart."
+];
+
+
+// ============================================================
+// GET QUOTE OF THE DAY
+// ============================================================
+
+function getQuoteOfTheDay(quotes) {
+
+    const today = new Date();
+
+    const seed =
+        today.getFullYear() * 372 +
+        (today.getMonth() + 1) * 31 +
+        today.getDate();
+
+    const index = seed % quotes.length;
+
+    return quotes[index];
+}
+
+
+// ============================================================
+// UPDATE QUOTE
+// ============================================================
+
+function updateQuote() {
+
+    const quotes =
+        currentMode === "love"
+            ? loveQuotes
+            : friendQuotes;
+
+    document.getElementById("quoteText").textContent =
+        `"${getQuoteOfTheDay(quotes)}"`;
+}
+
+
+// ============================================================
+// CHANGE MODE
+// ============================================================
+
+window.setMode = function(mode) {
+
+    currentMode = mode;
+
+    const title = document.getElementById("title");
+    const subtitle = document.getElementById("subtitle");
+    const button = document.getElementById("testButton");
+
+    const loveButton =
+        document.getElementById("loveModeButton");
+
+    const friendButton =
+        document.getElementById("friendModeButton");
+
+    const quoteLabel =
+        document.getElementById("quoteLabel");
+
+    const result =
+        document.getElementById("result");
+
+
+    result.innerHTML = "";
+
+
+    if (mode === "love") {
+
+        title.textContent = "❤️ Love Tester ❤️";
+
+        subtitle.textContent =
+            "Find out your love compatibility!";
+
+        button.textContent =
+            "Test Love ❤️";
+
+        button.style.background = "#ff4d88";
+
+        loveButton.classList.add("active");
+        friendButton.classList.remove("active");
+
+        quoteLabel.textContent =
+            "💌 Love Quote of the Day";
+
+    } else {
+
+        title.textContent = "👫 Friend Tester 👫";
+
+        subtitle.textContent =
+            "Find out your friendship compatibility!";
+
+        button.textContent =
+            "Test Friendship 👫";
+
+        button.style.background = "#7b68ee";
+
+        loveButton.classList.remove("active");
+        friendButton.classList.add("active");
+
+        quoteLabel.textContent =
+            "💙 Friend Quote of the Day";
+    }
+
+
+    updateQuote();
+};
+
+
+// ============================================================
+// CALCULATE TEST
+// ============================================================
+
+window.calculateTest = async function() {
+
+    const name1 =
+        document.getElementById("name1").value.trim();
+
+    const name2 =
+        document.getElementById("name2").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+
+    if (!name1 || !name2) {
+
+        result.textContent =
+            "Please enter both names!";
+
+        return;
+    }
+
+
+    // Same algorithm as your original Love Tester.
+    // Sorting means John + Rose gives the same result
+    // as Rose + John.
+
+    const combined =
+        [name1.toLowerCase(), name2.toLowerCase()]
+        .sort()
+        .join("");
+
+
+    let hash = 0;
+
+    for (let i = 0; i < combined.length; i++) {
+
+        hash +=
+            combined.charCodeAt(i) * (i + 1);
+    }
+
+
+    const score = hash % 101;
+
+
+    let message = "";
+
+
+    // ========================================================
+    // LOVE RESULTS
+    // ========================================================
+
+    if (currentMode === "love") {
+
+        if (score >= 90)
+            message = "💖 Soulmates!";
+
+        else if (score >= 75)
+            message = "😍 Great Match!";
+
+        else if (score >= 50)
+            message = "😊 Worth a Try!";
+
+        else if (score >= 25)
+            message = "🤔 Could Work.";
+
+        else
+            message = "💔 Better as Friends.";
+    }
+
+
+    // ========================================================
+    // FRIEND RESULTS
+    // ========================================================
+
+    else {
+
+        if (score >= 90)
+            message = "👑 Best Friends Forever!";
+
+        else if (score >= 75)
+            message = "🥳 Amazing Friends!";
+
+        else if (score >= 50)
+            message = "😄 Great Friendship!";
+
+        else if (score >= 25)
+            message = "🙂 Could Become Good Friends!";
+
+        else
+            message = "🤝 Give Friendship a Chance!";
+    }
+
+
+    result.innerHTML =
+        `${score}%<br>${message}`;
+
+
+    // ========================================================
+    // SAVE TO FIREBASE
+    // ========================================================
+
+    try {
+
+        await addDoc(
+            collection(db, "loveActivities"),
+            {
+                name1: name1,
+                name2: name2,
+                score: score,
+                message: message,
+
+                // This tells the admin panel
+                // whether this was Love or Friend mode.
+                type: currentMode,
+
+                date: new Date()
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Could not save activity:",
+            error
+        );
+    }
+};
+
+
+// ============================================================
+// LOAD INITIAL QUOTE
+// ============================================================
+
+updateQuote();
+
+</script>
+
+</body>
+</html>
